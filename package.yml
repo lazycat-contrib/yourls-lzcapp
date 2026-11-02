@@ -1,0 +1,18 @@
+package: community.lazycat.app.yourls
+name: YOURLS
+version: 0.0.0
+description: "Your own URL shortener, with click stats, custom keywords and a plugin API."
+min_os_version: "1.5.0"
+homepage: https://github.com/YOURLS/YOURLS
+author: YOURLS
+license: MIT
+permissions:
+  required:
+    - net.internet
+locales:
+  zh:
+    name: YOURLS
+    description: "自建短链接服务：生成 yourls 风格的短链、看点击统计、自定义关键词，还能装插件扩展。"
+  en:
+    name: YOURLS
+    description: "Your own URL shortener, with click stats, custom keywords and a plugin API."

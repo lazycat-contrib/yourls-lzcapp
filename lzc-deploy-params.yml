@@ -1,0 +1,21 @@
+params:
+  - id: admin_user
+    type: string
+    name: Admin username
+    description: "Username for the YOURLS admin area. Applied to config.php on first start."
+    default_value: admin
+    optional: false
+  - id: admin_password
+    type: secret
+    name: Admin password
+    description: "Password for the YOURLS admin area. Applied to config.php on first start; no built-in default exists."
+    default_value: "$random(len=20)"
+    optional: false
+locales:
+  zh:
+    admin_user:
+      name: 管理员用户名
+      description: YOURLS 后台的登录用户名。首次启动时写入配置文件。
+    admin_password:
+      name: 管理员密码
+      description: YOURLS 后台的登录密码，至少 12 位。首次启动时写入配置文件，不存在内置默认口令。

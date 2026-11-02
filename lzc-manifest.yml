@@ -1,0 +1,69 @@
+application:
+  subdomain: yourls
+  multi_instance: false
+  upstreams:
+    - location: /package-licenses/
+      backend: file:///lzcapp/pkg/content/licenses/
+    - location: /
+      backend: http://yourls:80/
+
+services:
+  db:
+    image: docker.1ms.run/library/mariadb:10.11
+    environment:
+      - MARIADB_ROOT_PASSWORD={{ stable_secret "yourls_db_root" | replace "\r" "" | replace "\n" "" }}
+      - MARIADB_DATABASE=yourls
+      - MARIADB_USER=yourls
+      - |-
+        MARIADB_PASSWORD={{ stable_secret "yourls_db_password" | replace "\r" "" | replace "\n" "" }}
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - mariadb-admin ping -h 127.0.0.1 -u root -p"$$MARIADB_ROOT_PASSWORD"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    binds:
+      - /lzcapp/var/db:/var/lib/mysql
+
+  yourls:
+    # upstream: library/yourls:1.10.6
+    image: docker.1ms.run/library/yourls:1.10.6
+    depends_on:
+      - db
+    environment:
+      - YOURLS_DB_HOST=db
+      - YOURLS_DB_NAME=yourls
+      - YOURLS_DB_USER=yourls
+      - |-
+        YOURLS_DB_PASS={{ stable_secret "yourls_db_password" | replace "\r" "" | replace "\n" "" }}
+      - YOURLS_DB_PREFIX=yourls_
+      - |-
+        YOURLS_SITE=https://{{ .S.AppDomain }}
+      - |-
+        YOURLS_USER={{ .U.admin_user }}
+      - |-
+        YOURLS_PASS={{ .U.admin_password }}
+      - TZ=Asia/Shanghai
+    binds:
+      - /lzcapp/var/html:/var/www/html
+
+usage: |
+  YOURLS 是自建短链接服务：生成短链、看点击统计、自定义关键词。
+
+  使用方法：
+  1. 打开应用，用你在安装时填写的管理员用户名和密码登录（/admin/）。
+  2. 粘贴长网址，可以自定义短码，点生成即得到短链。
+  3. 在管理后台能看到每条短链的点击次数和来源。
+
+  数据与安全：
+  - 数据库在 MariaDB（/lzcapp/var/db），程序与配置在 /lzcapp/var/html。卸载应用会一并删除，请定期备份。
+  - 数据库密码由平台稳定密钥生成；管理员用户名和密码由你在安装时设置，默认随机，不存在内置弱口令。
+  - 应用经懒猫入口鉴权访问。
+
+  说明：
+  - 本应用包含两个容器（YOURLS + MariaDB），启动顺序由依赖关系保证。
+  - 短链域名取自本应用的访问地址，站内跳转直接可用。
+  - 未配置邮件服务。
+  - 未做真机验证：登录、创建短链、跳转、点击统计以及重启后持久化均未在设备上实测。
